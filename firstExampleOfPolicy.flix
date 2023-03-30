@@ -56,8 +56,8 @@ def agentAttributesWithLiterals(): #{ AgentAttributel(String, String, String, St
     AgentAttributel("98uio", "Role", "nurse", " ").
 }
 
-def findSecMeasures(uri:String): #{FindSecMeasure(String,String),SecurityMeasure(String,String,String)} =#{
-    FindSecMeasure(id,access_key) :- SecurityMeasure(uri,id,access_key).
+def searchSecMeasures(uri:String): #{SearchSecMeasure(String,String),SecurityMeasure(String,String,String)} =#{
+    SearchSecMeasure(id,access_key) :- SecurityMeasure(uri,id,access_key).
 }
 ///////////////////////*functions for literal metadata and attributes*//////////////
 def searchbyformat(format: String): #{SearchByFormat(String),Metadatal(String,String,String,String)} =#{
@@ -133,7 +133,7 @@ def authorizations(): #{HaveOperation(String,String,String), Authorization(Strin
 def main(): Unit \ IO =
 query searchAttributesLofAgent("a2b67"), agentAttributesWithLiterals() select (x,y) from AttrLAgent(x,y) |> println;
 query searchAttributesNofAgent("a2b67"), agentAttributesWithNumbers() select (x,y) from AttrNAgent(x,y) |> println;
-query securityMeasures() select (x) from SecurityMeasure(_,x,_) |> println;
+query searchSecMeasures("www1"), securityMeasures() select (id, access_key) from SearchSecMeasure(id, access_key) |> println;
 query searchByYear(2018), metadataWithNumbers() select (uri) from ResourceYear(uri) |> println;
 query searchBeforeYear(2023), metadataWithNumbers() select (uri) from ResourceBefore(uri) |> println;
 query authorizations(), metadataWithNumbers() select (x) from SensitiveResources(x) |> println;
