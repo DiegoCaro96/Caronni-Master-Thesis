@@ -144,7 +144,26 @@ def havenumericalattributes(): #{HaveNumAttributes(String),Agent(String), AgentA
 }
 
 /////////////////////////*AUTHORIZATIONS*///////////////////////
-def authorizations(): #{ HaveOperation(String,String), HaveAccessMode(String,String),AssignOperation(String,String,String), Authorization(String,String,String), AccessMode(String,String), Resource(String), AgentAttributel(String,String,String,String), SameName(String,String,String,String), Metadatal(String, String, String, String),SeniorInCompany(String,String,String),SeniorWorker(String,String), AgentAttributen(String,String,Int32,String), Metadatan(String,String,Int32,String), SensitiveResource(String), ConsentResource(String), Operation(String,String)} = #{
+def authorizations(): #{ HaveOperation(String,String), 
+                         HaveAccessMode(String,String),
+                         AssignOperation(String,String,String), 
+                         Authorization(String,String,String), 
+                         LessPowerfull(String,String),
+                         MorePowerfull(String,String),
+                         SameName(String,String,String,String), 
+                         SeniorInCompany(String,String,String),
+                         SeniorWorker(String,String),
+                         SensitiveResource(String), 
+                         ConsentResource(String), 
+                         /*facts*/
+                         AccessMode(String,String), 
+                         Operation(String,String),
+                         Resource(String), 
+                         Metadatal(String, String, String, String),
+                         Metadatan(String,String,Int32,String),
+                         AgentAttributel(String,String,String,String),  
+                         AgentAttributen(String,String,Int32,String)} =                    
+#{
     /*EXAMPLE OF CONSTRAINTS*/
     SensitiveResource(uri) :- Metadatan(uri, "Rank of sensitivity", value,_), if value >= 4.
     ConsentResource(uri) :- Metadatal(uri, "Consent", value,_), if value == "y".
@@ -180,6 +199,12 @@ def authorizations(): #{ HaveOperation(String,String), HaveAccessMode(String,Str
 
     /*find resources and their access modes, map the relation RESOURCE-HAVE-ACCESS MODE*/
     HaveAccessMode(uri,access_mode) :- Resource(uri), Authorization(uri,_,access_mode).
+    
+    /*classify authorizations*/
+    LessPowerfull(uri,id) :- Authorization(uri,id,op), if op == "r".
+    LessPowerfull(uri,id) :- Authorization(uri,id,op), if op == "w".
+    MorePowerfull(uri,id) :- Authorization(uri,id,op), if op == "u".
+    MorePowerfull(uri,id) :- Authorization(uri,id,op), if op == "d".
 
     /*find resources and their operation, map the relation RESOURCE-HAVE-OPERATION*/
     HaveOperation(uri,op) :- Resource(uri), AssignOperation(uri,_,op).
