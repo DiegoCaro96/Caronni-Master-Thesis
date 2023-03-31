@@ -133,7 +133,7 @@ def authorizations(): #{HaveOperation(String,String,String), Authorization(Strin
 def main(): Unit \ IO =
 query searchAttributesLofAgent("a2b67"), agentAttributesWithLiterals() select (x,y) from AttrLAgent(x,y) |> println;
 query searchAttributesNofAgent("a2b67"), agentAttributesWithNumbers() select (x,y) from AttrNAgent(x,y) |> println;
-query searchSecMeasures("www1"), securityMeasures() select (id, access_key) from SearchSecMeasure(id, access_key) |> println;
+query searchSecMeasures("www1"), securityMeasures() select (alg, access_key) from SearchSecMeasure(alg, access_key) |> println;
 query searchByYear(2018), metadataWithNumbers() select (uri) from ResourceYear(uri) |> println;
 query searchBeforeYear(2023), metadataWithNumbers() select (uri) from ResourceBefore(uri) |> println;
 query authorizations(), metadataWithNumbers() select (x) from SensitiveResources(x) |> println;

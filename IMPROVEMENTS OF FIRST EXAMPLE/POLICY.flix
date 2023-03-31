@@ -68,7 +68,7 @@ def agentAttributesWithLiterals(): #{ AgentAttributel(String, String, String, St
 /*RESOURCES*/
 /*function to find all security measures associated to a given resource passed in input*/
 def searchSecMeasures(uri:String): #{SearchSecMeasure(String,String),SecurityMeasure(String,String,String)} =#{
-    SearchSecMeasure(id,access_key) :- SecurityMeasure(uri,id,access_key).
+    SearchSecMeasure(algorithm,access_key) :- SecurityMeasure(uri,algorithm,access_key).
 }
 
 /*function to map the relation RESOURCE - HAVE - SECURITY MEASURES*/
@@ -183,7 +183,7 @@ def authorizations(): #{ HaveOperation(String,String), HaveAccessMode(String,Str
 def main(): Unit \ IO =
 query searchAttributesLofAgent("a2b67"), agentAttributesWithLiterals() select (x,y) from AttrLAgent(x,y) |> println;
 query searchAttributesNofAgent("a2b67"), agentAttributesWithNumbers() select (x,y) from AttrNAgent(x,y) |> println;
-query searchSecMeasures("www1"), securityMeasures() select (id, access_key) from SearchSecMeasure(id, access_key) |> println;
+query searchSecMeasures("www1"), securityMeasures() select (alg, access_key) from SearchSecMeasure(alg, access_key) |> println;
 query searchByYear(2018), metadataWithNumbers() select (uri) from ResourceYear(uri) |> println;
 query searchBeforeYear(2023), metadataWithNumbers() select (uri) from ResourceBefore(uri) |> println;
 query authorizations(), metadataWithNumbers() select (x) from SensitiveResources(x) |> println;
