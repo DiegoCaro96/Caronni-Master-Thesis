@@ -40,6 +40,13 @@ def metadataWithLiterals(): #{ Metadatal(String, String, String, String) | r } =
     Metadatal("www2", "Company", "c2", " ").
     Metadatal("www1", "Format of the data", ".txt", " ").
     Metadatal("www2", "Format of the data", ".pdf", " ").
+    Metadatal("www1", "Type of data", "public", " "). /*public,private,pseudoanonymized,anonymized*/
+    Metadatal("www2", "Type of data", "anonymized", " ").
+    Metadatal("www1", "Source", "sensor", " "). /*sensor,person*/
+    Metadatal("www2", "Source", "person", " ").
+    Metadatal("www1", "Original URI Source", "wwwN", " "). /*Original uri of the source*/
+    Metadatal("www1", "Consent", "y", " "). /*Consent: yes/no*/
+    Metadatal("www2", "Consent", "y", " ").
 }
 
 /*(id)*/
