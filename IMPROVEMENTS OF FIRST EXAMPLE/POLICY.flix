@@ -41,7 +41,7 @@ def metadataWithLiterals(): #{ Metadatal(String, String, String, String) | r } =
     Metadatal("www1", "Format of the data", ".txt", " ").
     Metadatal("www2", "Format of the data", ".pdf", " ").
     Metadatal("www1", "Type of data", "public", " "). /*public,private,pseudoanonymized,anonymized*/
-    Metadatal("www2", "Type of data", "anonymized", " ").
+    Metadatal("www2", "Type of data", "public", " ").
     Metadatal("www1", "Source", "sensor", " "). /*sensor,person*/
     Metadatal("www2", "Source", "person", " ").
     Metadatal("www1", "Original URI Source", "wwwN", " "). /*Original uri of the source*/
@@ -144,9 +144,10 @@ def havenumericalattributes(): #{HaveNumAttributes(String),Agent(String), AgentA
 }
 
 /////////////////////////*AUTHORIZATIONS*///////////////////////
-def authorizations(): #{ HaveOperation(String,String), HaveAccessMode(String,String),AssignOperation(String,String,String), Authorization(String,String,String), AccessMode(String,String), Resource(String), AgentAttributel(String,String,String,String), SameName(String,String,String,String), Metadatal(String, String, String, String),SeniorInCompany(String,String,String),SeniorWorker(String,String), AgentAttributen(String,String,Int32,String), Metadatan(String,String,Int32,String), SensitiveResources(String), Operation(String,String)} = #{
+def authorizations(): #{ HaveOperation(String,String), HaveAccessMode(String,String),AssignOperation(String,String,String), Authorization(String,String,String), AccessMode(String,String), Resource(String), AgentAttributel(String,String,String,String), SameName(String,String,String,String), Metadatal(String, String, String, String),SeniorInCompany(String,String,String),SeniorWorker(String,String), AgentAttributen(String,String,Int32,String), Metadatan(String,String,Int32,String), SensitiveResource(String), ConsentResource(String), Operation(String,String)} = #{
     /*EXAMPLE OF CONSTRAINTS*/
-    SensitiveResources(uri) :- Metadatan(uri, "Rank of sensitivity", value,_), if value >= 4.
+    SensitiveResource(uri) :- Metadatan(uri, "Rank of sensitivity", value,_), if value >= 4.
+    ConsentResource(uri) :- Metadatal(uri, "Consent", value,_), if value == "y".
     SameName(uri,id,name,value) :- Metadatal(uri,name,value,_), AgentAttributel(id,name,value,_). /*AGENT AND RESOURCE OF THE SAME COMPANY*/
     SeniorWorker(id,role) :-AgentAttributel(id,"Role",role,_), AgentAttributen(id, "Years of experience",experience,_),if experience >= 10.
     SeniorInCompany(id,role,company) :- AgentAttributel(id,"Company",company,_),AgentAttributel(id,"Role",role,_),AgentAttributen(id, "Years in the company",years,_),if years >= 5.
@@ -193,7 +194,8 @@ query searchAttributesNofAgent("a2b67"), agentAttributesWithNumbers() select (x,
 query searchSecMeasures("www1"), securityMeasures() select (alg, access_key) from SearchSecMeasure(alg, access_key) |> println;
 query searchByYear(2018), metadataWithNumbers() select (uri) from ResourceYear(uri) |> println;
 query searchBeforeYear(2023), metadataWithNumbers() select (uri) from ResourceBefore(uri) |> println;
-query authorizations(), metadataWithNumbers() select (x) from SensitiveResources(x) |> println;
+query authorizations(), metadataWithNumbers() select (x) from SensitiveResource(x) |> println;
+query authorizations(), metadataWithLiterals() select (x) from ConsentResource(x) |> println;
 query authorizations(), agentAttributesWithLiterals(), agentAttributesWithNumbers() select (id,role,company) from SeniorInCompany(id,role,company) |>println;
 query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers() select (uri,id,access_mode) from Authorization(uri, id, access_mode) |> println;
 query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers(),operations() select (uri,id,access_mode) from AssignOperation(uri, id, access_mode) |> println;
