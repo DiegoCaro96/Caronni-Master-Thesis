@@ -3,7 +3,7 @@
 def accessModes(): #{ AccessMode(String,String) | r } = #{
      AccessMode("r", "Read").
      AccessMode("w", "Write").
-     AccessMode("u", "Write").
+     AccessMode("u", "Update").
      AccessMode("d", "Delete").
 }
 
@@ -28,10 +28,8 @@ def resources(): #{ Resource(String) | r } = #{
 
 /*(uri, name, value, description)*/
 def metadataWithNumbers(): #{ Metadatan(String, String, Int32 , String) | r } = #{
-    Metadatan("www1","Last Write", 2018, " ").
-    Metadatan("www1","Rank of sensitivity",2, " ").
-    Metadatan("www2","Last Write", 2015, " ").
-    Metadatan("www2","Rank of sensitivity",5, " ").
+    Metadatan("www1","Last modified", 2018, " ").
+    Metadatan("www2","Last modified", 2015, " ").
 }
 
 /*(uri, name, value, description)*/
@@ -40,8 +38,8 @@ def metadataWithLiterals(): #{ Metadatal(String, String, String, String) | r } =
     Metadatal("www2", "Company", "c2", " ").
     Metadatal("www1", "Format of the data", ".txt", " ").
     Metadatal("www2", "Format of the data", ".pdf", " ").
-    Metadatal("www1", "Type of data", "public", " "). /*public,private,pseudoanonymized,anonymized*/
-    Metadatal("www2", "Type of data", "public", " ").
+    Metadatal("www1", "Type of data", "public", " "). /*public,private*/ 
+    Metadatal("www2", "Type of data", "private", " ").
     Metadatal("www1", "Source", "sensor", " "). /*sensor,person*/
     Metadatal("www2", "Source", "person", " ").
     Metadatal("www1", "Original URI Source", "wwwN", " "). /*Original uri of the source*/
@@ -103,22 +101,41 @@ def havenumericalmetadata(): #{HaveNumMetadata(String), Resource(String),Metadat
     HaveNumMetadata(uri) :- Resource(uri), Metadatan(uri,_,_,_).
 }
 
-/*search resources according to last Write*/
+/*search resources according to Last modified*/
 def searchByYear(year: Int32): #{ResourceYear(String), Metadatan(String,String,Int32,String)}  =#{
-    ResourceYear(uri) :- Metadatan(uri, "Last Write",year,_).
+    ResourceYear(uri) :- Metadatan(uri, "Last modified",year,_).
 }
 
 def searchBeforeYear(year: Int32): #{ResourceBefore(String), Metadatan(String,String,Int32,String)}  =#{
-    ResourceBefore(uri) :- Metadatan(uri, "Last Write",y,_), if y <= year.
+    ResourceBefore(uri) :- Metadatan(uri, "Last modified",y,_), if y <= year.
 }
 
 def searchAfterYear(year: Int32): #{ResourceAfter(String), Metadatan(String,String,Int32,String)}  =#{
-    ResourceAfter(uri) :- Metadatan(uri, "Last Write",y,_), if y >= year.
+    ResourceAfter(uri) :- Metadatan(uri, "Last modified",y,_), if y >= year.
+}
+
+/*find all resources provided by a company*/
+def searchAllOfCompany(company: String): #{SearchAllOfCompany(String),Metadatal(String,String,String,String)} =#{
+    SearchAllOfCompany(uri) :- Metadatal(uri,"Company", company,_).
 }
 
 /*search resources by format*/
 def searchbyformat(format: String): #{SearchByFormat(String),Metadatal(String,String,String,String)} =#{
     SearchByFormat(uri) :- Metadatal(uri,"Format of the data", format,_).
+}
+
+/*find public or private resource put in input private or public*/
+def searchByType(typee: String): #{SearchByType(String),Metadatal(String,String,String,String)} =#{
+    SearchByType(uri) :- Metadatal(uri,"Type of data", typee,_).
+}
+
+/*search resources provided by sensor or person*/
+def searchBySource(source: String): #{SearchBySource(String),Metadatal(String,String,String,String)} =#{
+    SearchBySource(uri) :- Metadatal(uri,"Source", source,_).
+}
+
+def findOriginalUri(uri: String): #{OriginalUri(String),Metadatal(String,String,String,String)} =#{
+    OriginalUri(uri_source) :- Metadatal(uri,"Original URI Source", uri_source,_).
 }
 
 
@@ -143,6 +160,11 @@ def havenumericalattributes(): #{HaveNumAttributes(String),Agent(String), AgentA
     HaveNumAttributes(id) :- Agent(id),AgentAttributen(id,_,_,_).
 }
 
+/*find all workers of a company*/
+def allworkers(company:String): #{AllWorkers(String,String), AgentAttributel(String,String,String,String)} =#{
+    AllWorkers(id,role) :- AgentAttributel(id,"Company",company,_),AgentAttributel(id,"Role",role,_).
+}
+
 /////////////////////////*AUTHORIZATIONS*///////////////////////
 def authorizations(): #{ HaveOperation(String,String), 
                          HaveAccessMode(String,String),
@@ -154,6 +176,7 @@ def authorizations(): #{ HaveOperation(String,String),
                          SeniorInCompany(String,String,String),
                          SeniorWorker(String,String),
                          SensitiveResource(String), 
+                         RecentResource(String),
                          ConsentResource(String), 
                          /*facts*/
                          AccessMode(String,String), 
@@ -164,32 +187,47 @@ def authorizations(): #{ HaveOperation(String,String),
                          AgentAttributel(String,String,String,String),  
                          AgentAttributen(String,String,Int32,String)} =                    
 #{
-    /*EXAMPLE OF CONSTRAINTS*/
-    SensitiveResource(uri) :- Metadatan(uri, "Rank of sensitivity", value,_), if value >= 4.
+    /*POSSIBLE CONSTRAINTS*/
+    /*Constraints on metadata*/
+    SensitiveResource(uri) :- Metadatal(uri, "Type of data", value,_), if value == "private".
+    RecentResource(uri) :- Metadatan(uri, "Last modified",year,_), if year >= 2020.
     ConsentResource(uri) :- Metadatal(uri, "Consent", value,_), if value == "y".
-    SameName(uri,id,name,value) :- Metadatal(uri,name,value,_), AgentAttributel(id,name,value,_). /*AGENT AND RESOURCE OF THE SAME COMPANY*/
+    /*Constraints on attributes*/
+    SameName(uri,id,name,value) :- Metadatal(uri,name,value,_), AgentAttributel(id,name,value,_). /*AGENT AND RESOURCE THAT HAVE SAME LITERAL ATTRIBUTE AND METADATA WITH THE SAME VALUE EXAMPLE: BELONG TO THE SAME COMPANY*/
     SeniorWorker(id,role) :-AgentAttributel(id,"Role",role,_), AgentAttributen(id, "Years of experience",experience,_),if experience >= 10.
     SeniorInCompany(id,role,company) :- AgentAttributel(id,"Company",company,_),AgentAttributel(id,"Role",role,_),AgentAttributen(id, "Years in the company",years,_),if years >= 5.
    
    /*AUTHORIZATIONS*/  /* read and write less restrictive than update and delete*/
    /*doctors*/
-   /*doctors can read every resource, 
+   /*doctors -- consent resources
+             can read every resource, 
              can write resources provided by their company 
              can update resources provided by their company if they are experienced workers
              can delete resources provided by their company if they are experienced workers and also work for their company for some years*/
-   Authorization(uri,id,access_mode) :- Resource(uri), AgentAttributel(id,"Role","doctor",_), AccessMode(access_mode,"Read").
-   Authorization(uri,id,access_mode) :- SameName(uri,id,"Company",_), Resource(uri), AgentAttributel(id,"Role","doctor",_), AccessMode(access_mode,"Write").
-   Authorization(uri,id,access_mode) :- SeniorWorker(id,"doctor"),SameName(uri,id,"Company",_), Resource(uri), AgentAttributel(id,"Role","doctor",_), AccessMode(access_mode,"Update").
-   Authorization(uri,id,access_mode) :- SeniorInCompany(id,_,_),SeniorWorker(id,_),SameName(uri,id,"Company",_), Resource(uri), AgentAttributel(id,"Role","doctor",_), AccessMode(access_mode,"Delete").
+   Authorization(uri,id,access_mode) :- ConsentResource(uri), Resource(uri), AgentAttributel(id,"Role","doctor",_), AccessMode(access_mode,"Read").
+   Authorization(uri,id,access_mode) :- SameName(uri,id,"Company",_),ConsentResource(uri), Resource(uri), AgentAttributel(id,"Role","doctor",_), AccessMode(access_mode,"Write").
+   Authorization(uri,id,access_mode) :- SeniorWorker(id,"doctor"),SameName(uri,id,"Company",_),ConsentResource(uri), Resource(uri), AgentAttributel(id,"Role","doctor",_), AccessMode(access_mode,"Update").
+   Authorization(uri,id,access_mode) :- SeniorInCompany(id,_,_),SeniorWorker(id,_),SameName(uri,id,"Company",_),ConsentResource(uri), Resource(uri), AgentAttributel(id,"Role","doctor",_), AccessMode(access_mode,"Delete").
 
    /*nurses*/
-   /*nurses  can read resourcess provided by their company 
+   /*nurses -- consent resources and public 
+             can read resources provided by their company 
              can write resources provided by their company if they are experienced workers
              can update resourcess provided by their company if they are experienced workers and also work for their company for some years*/
-   Authorization(uri,id,access_mode) :- SameName(uri,id,"Company",_), Resource(uri), AgentAttributel(id,"Role","nurse",_), AccessMode(access_mode,"Read").
-   Authorization(uri,id,access_mode) :- SeniorWorker(id,"nurse"),SameName(uri,id,"Company",_), Resource(uri), AgentAttributel(id,"Role","nurse",_), AccessMode(access_mode,"Write").
-   Authorization(uri,id,access_mode) :- SeniorInCompany(id,_,_),SeniorWorker(id,_),SameName(uri,id,"Company",_), Resource(uri), AgentAttributel(id,"Role","nurse",_), AccessMode(access_mode,"Update"). 
-   
+   Authorization(uri,id,access_mode) :- SameName(uri,id,"Company",_), not SensitiveResource(uri), ConsentResource(uri), Resource(uri), AgentAttributel(id,"Role","nurse",_), AccessMode(access_mode,"Read").
+   Authorization(uri,id,access_mode) :- SeniorWorker(id,"nurse"),SameName(uri,id,"Company",_),not SensitiveResource(uri), ConsentResource(uri), Resource(uri), AgentAttributel(id,"Role","nurse",_), AccessMode(access_mode,"Write").
+   Authorization(uri,id,access_mode) :- SeniorInCompany(id,_,_),SeniorWorker(id,_),SameName(uri,id,"Company",_),not SensitiveResource(uri), ConsentResource(uri), Resource(uri), AgentAttributel(id,"Role","nurse",_), AccessMode(access_mode,"Update"). 
+
+   /*classify authorizations*/
+   LessPowerfull(uri,id) :- Authorization(uri,id,op), if op == "r".
+   LessPowerfull(uri,id) :- Authorization(uri,id,op), if op == "w".
+   MorePowerfull(uri,id) :- Authorization(uri,id,op), if op == "u".
+   MorePowerfull(uri,id) :- Authorization(uri,id,op), if op == "d".
+
+   /*find resources and their access modes, map the relation RESOURCE-HAVE-ACCESS MODE*/
+   HaveAccessMode(uri,access_mode) :- Resource(uri), Authorization(uri,_,access_mode).
+
+   /*if read or write it is possible only to decrypt, if update or delete it is possible to decrypt e encrypt*/
    AssignOperation(uri,id,op) :- Authorization(uri,id, "r"), Operation(op,"Decrypt").
    AssignOperation(uri,id,op) :- Authorization(uri,id, "w"), Operation(op,"Decrypt").
    AssignOperation(uri,id,op) :- Authorization(uri,id, "u"), Operation(op,"Decrypt").
@@ -197,32 +235,39 @@ def authorizations(): #{ HaveOperation(String,String),
    AssignOperation(uri,id,op) :- Authorization(uri,id, "d"), Operation(op,"Decrypt"). 
    AssignOperation(uri,id,op) :- Authorization(uri,id, "d"), Operation(op,"Encrypt"). 
 
-    /*find resources and their access modes, map the relation RESOURCE-HAVE-ACCESS MODE*/
-    HaveAccessMode(uri,access_mode) :- Resource(uri), Authorization(uri,_,access_mode).
-    
-    /*classify authorizations*/
-    LessPowerfull(uri,id) :- Authorization(uri,id,op), if op == "r".
-    LessPowerfull(uri,id) :- Authorization(uri,id,op), if op == "w".
-    MorePowerfull(uri,id) :- Authorization(uri,id,op), if op == "u".
-    MorePowerfull(uri,id) :- Authorization(uri,id,op), if op == "d".
-
-    /*find resources and their operation, map the relation RESOURCE-HAVE-OPERATION*/
-    HaveOperation(uri,op) :- Resource(uri), AssignOperation(uri,_,op).
+   /*find resources and their operation, map the relation RESOURCE-HAVE-OPERATION*/
+   HaveOperation(uri,op) :- Resource(uri), AssignOperation(uri,_,op).
 }
 
 
 /////////////////////////*MAIN*///////////////////////
 
 def main(): Unit \ IO =
-query searchAttributesLofAgent("a2b67"), agentAttributesWithLiterals() select (x,y) from AttrLAgent(x,y) |> println;
-query searchAttributesNofAgent("a2b67"), agentAttributesWithNumbers() select (x,y) from AttrNAgent(x,y) |> println;
+query searchMetadataNofResource("www2"), metadataWithNumbers() select (name,value) from MetadataNResource(name,value) |> println;
 query searchSecMeasures("www1"), securityMeasures() select (alg, access_key) from SearchSecMeasure(alg, access_key) |> println;
 query searchByYear(2018), metadataWithNumbers() select (uri) from ResourceYear(uri) |> println;
-query searchBeforeYear(2023), metadataWithNumbers() select (uri) from ResourceBefore(uri) |> println;
-query authorizations(), metadataWithNumbers() select (x) from SensitiveResource(x) |> println;
+query searchAttributesLofAgent("a2b67"), agentAttributesWithLiterals() select (name,value) from AttrLAgent(name,value) |> println;
+query searchAllOfCompany("c1"), metadataWithLiterals() select (uri) from SearchAllOfCompany(uri) |> println;
+query allworkers("c2"), agentAttributesWithLiterals() select (id,role) from AllWorkers(id,role) |> println;
+query findOriginalUri("www1"), metadataWithLiterals() select (uri_source) from OriginalUri(uri_source) |> println;
+query findOriginalUri("www2"), metadataWithLiterals() select (uri_source) from OriginalUri(uri_source) |> println;
+
+query authorizations(), metadataWithLiterals() select (x) from SensitiveResource(x) |> println;
 query authorizations(), metadataWithLiterals() select (x) from ConsentResource(x) |> println;
+
+query authorizations(), agentAttributesWithLiterals(), agentAttributesWithNumbers() select (id,role) from SeniorWorker(id,role) |>println;
 query authorizations(), agentAttributesWithLiterals(), agentAttributesWithNumbers() select (id,role,company) from SeniorInCompany(id,role,company) |>println;
+
 query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers() select (uri,id,access_mode) from Authorization(uri, id, access_mode) |> println;
-query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers(),operations() select (uri,id,access_mode) from AssignOperation(uri, id, access_mode) |> println;
+query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers() select (uri,id) from LessPowerfull(uri, id) |> println;
+query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers() select (uri,id) from MorePowerfull(uri, id) |> println;
+query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers(),operations() select (uri,id,access_mode) from AssignOperation(uri, id, access_mode) |> println
+
+
+/*others
+query searchBeforeYear(2023), metadataWithNumbers() select (uri) from ResourceBefore(uri) |> println;
+query searchAttributesNofAgent("98uio"), agentAttributesWithNumbers() select (name,value) from AttrNAgent(name,value) |> println;
+
 query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers() select (uri,access_mode) from HaveAccessMode(uri,access_mode) |> println;
-query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers(),operations() select (uri,op) from HaveOperation(uri, op) |> println
+query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers(),operations() select (uri,op) from HaveOperation(uri, op) |> println;
+*/
