@@ -221,10 +221,10 @@ def authorizations(): #{ HaveOperation(String,String),
    Authorization(uri,id,access_mode) :- SeniorInCompany(id,_,_),SeniorWorker(id,_),SameName(uri,id,"Company",_),not SensitiveResource(uri), ConsentResource(uri), Resource(uri), AgentAttributel(id,"Role","nurse",_), AccessMode(access_mode,"Update"). 
 
    /*classify authorizations*/
-   LessPowerfull(uri,id) :- Authorization(uri,id,op), if op == "r".
-   LessPowerfull(uri,id) :- Authorization(uri,id,op), if op == "w".
-   MorePowerfull(uri,id) :- Authorization(uri,id,op), if op == "u".
-   MorePowerfull(uri,id) :- Authorization(uri,id,op), if op == "d".
+   LessPowerfull(uri,id) :- Authorization(uri,id,am), if am == "r".
+   LessPowerfull(uri,id) :- Authorization(uri,id,am), if am == "w".
+   MorePowerfull(uri,id) :- Authorization(uri,id,am), if am == "u".
+   MorePowerfull(uri,id) :- Authorization(uri,id,am), if am == "d".
 
    /*find resources and their access modes, map the relation RESOURCE-HAVE-ACCESS MODE*/
    HaveAccessMode(uri,access_mode) :- Resource(uri), Authorization(uri,_,access_mode).
@@ -270,7 +270,7 @@ query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(),
 query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers() select (uri,id) from LessPowerfull(uri, id) |> println;
 query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers() select (uri,id) from MorePowerfull(uri, id) |> println;
 query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers() select (uri,id) from AuthWithSameUriId(uri, id) |> println;
-query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers(),operations() select (uri,id,access_mode) from AssignOperation(uri, id, access_mode) |> println
+query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers(),operations() select (uri,id,op) from AssignOperation(uri, id, op) |> println
 
 
 /*others
