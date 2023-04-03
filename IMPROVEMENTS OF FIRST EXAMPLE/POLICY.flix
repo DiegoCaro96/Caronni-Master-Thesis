@@ -168,6 +168,8 @@ def allworkers(company:String): #{AllWorkers(String,String), AgentAttributel(Str
 /////////////////////////*AUTHORIZATIONS*///////////////////////
 def authorizations(): #{ HaveOperation(String,String), 
                          HaveAccessMode(String,String),
+                         AuthWithSameUriId(String,String),
+                         OpWithSameUriId(String,String),
                          AssignOperation(String,String,String), 
                          Authorization(String,String,String), 
                          LessPowerfull(String,String),
@@ -227,6 +229,9 @@ def authorizations(): #{ HaveOperation(String,String),
    /*find resources and their access modes, map the relation RESOURCE-HAVE-ACCESS MODE*/
    HaveAccessMode(uri,access_mode) :- Resource(uri), Authorization(uri,_,access_mode).
 
+   /*authorizations with same uri e id*/
+   AuthWithSameUriId(uri,id) :- Authorization(uri,id,access_mode1),Authorization(uri,id,access_mode2), if access_mode1 != access_mode2.
+
    /*if read or write it is possible only to decrypt, if update or delete it is possible to decrypt e encrypt*/
    AssignOperation(uri,id,op) :- Authorization(uri,id, "r"), Operation(op,"Decrypt").
    AssignOperation(uri,id,op) :- Authorization(uri,id, "w"), Operation(op,"Decrypt").
@@ -237,6 +242,9 @@ def authorizations(): #{ HaveOperation(String,String),
 
    /*find resources and their operation, map the relation RESOURCE-HAVE-OPERATION*/
    HaveOperation(uri,op) :- Resource(uri), AssignOperation(uri,_,op).
+
+   /*authorizations with same uri e id*/
+   OpWithSameUriId(uri,id) :- AssignOperation(uri,id,op1),AssignOperation(uri,id,op2), if op1 != op2.
 }
 
 
@@ -261,6 +269,7 @@ query authorizations(), agentAttributesWithLiterals(), agentAttributesWithNumber
 query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers() select (uri,id,access_mode) from Authorization(uri, id, access_mode) |> println;
 query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers() select (uri,id) from LessPowerfull(uri, id) |> println;
 query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers() select (uri,id) from MorePowerfull(uri, id) |> println;
+query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers() select (uri,id) from AuthWithSameUriId(uri, id) |> println;
 query authorizations(),resources(),agentAttributesWithLiterals(), accessModes(), metadataWithLiterals(), agentAttributesWithNumbers(),operations() select (uri,id,access_mode) from AssignOperation(uri, id, access_mode) |> println
 
 
