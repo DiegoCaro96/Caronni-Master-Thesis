@@ -189,12 +189,12 @@ def authorizations(): #{ HaveOperation(String,String),
                          AgentAttributel(String,String,String,String),  
                          AgentAttributen(String,String,Int32,String)} =                    
 #{
-    /*POSSIBLE CONSTRAINTS*/
-    /*Constraints on metadata*/
+    /*POSSIBLE FILTERS TO MAKE AUTHORIZATIONS*/
+    /*on metadata*/
     SensitiveResource(uri) :- Metadatal(uri, "Type of data", value,_), if value == "private".
     RecentResource(uri) :- Metadatan(uri, "Last modified",year,_), if year >= 2020.
     ConsentResource(uri) :- Metadatal(uri, "Consent", value,_), if value == "y".
-    /*Constraints on attributes*/
+    /*on attributes*/
     SameName(uri,id,name,value) :- Metadatal(uri,name,value,_), AgentAttributel(id,name,value,_). /*AGENT AND RESOURCE THAT HAVE SAME LITERAL ATTRIBUTE AND METADATA WITH THE SAME VALUE EXAMPLE: BELONG TO THE SAME COMPANY*/
     SeniorWorker(id,role) :-AgentAttributel(id,"Role",role,_), AgentAttributen(id, "Years of experience",experience,_),if experience >= 10.
     SeniorInCompany(id,role,company) :- AgentAttributel(id,"Company",company,_),AgentAttributel(id,"Role",role,_),AgentAttributen(id, "Years in the company",years,_),if years >= 5.
