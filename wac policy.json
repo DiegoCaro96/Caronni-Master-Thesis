@@ -1,0 +1,142 @@
+@base <http://example.com/> .
+@prefix ex: <http://example.com/> .
+@prefix acl: <http://www.w3.org/ns/auth/acl#> . 
+@prefix oc-acl: <http://voc.orchestracities.io/oc-acl#> . 
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+/*****************************constraints*******************************/
+
+/*Recent resource*/
+ex:recent a oc-acl:LeftOperandAttribute ;
+    oc-acl:scope oc-acl:object ;
+    oc-acl:attributeName "Last modified" .
+
+ex:recentresource a odrl:Constraint ;
+    odrl:leftOperand ex:recent ;
+    odrl:operator odrl:gt ;
+    odrl:rightOperand "2019-12-31"^^xsd:date .
+
+/*Consent resource*/
+ex:consent a oc-acl:LeftOperandAttribute ;
+    oc-acl:scope oc-acl:object ;
+    oc-acl:attributeName "Consent" .
+
+ex:consentresource a odrl:Constraint ;
+    odrl:leftOperand ex:consent ;
+    odrl:operator odrl:eq ;
+    odrl:rightOperand "y" .
+
+/*not Sensitive resource*/	
+ex:typeofdata a oc-acl:LeftOperandAttribute ;
+    oc-acl:scope oc-acl:object ;
+    oc-acl:attributeName "Type of data" .
+
+ex:notsensitiveresource a odrl:Constraint ;
+    odrl:leftOperand ex:typeofdata ;
+    odrl:operator odrl:eq ;
+    odrl:rightOperand "public" .
+	
+/*Senior worker*/	
+ex:yearsofexperience a oc-acl:LeftOperandAttribute ;
+    oc-acl:scope oc-acl:subject ;
+    oc-acl:attributeName "Years of experience" .
+
+ex:seniorworker a odrl:Constraint ;
+    odrl:leftOperand ex:yearsofexperience ;
+    odrl:operator odrl:ge;
+    odrl:rightOperand "10" .
+	
+/*Senior in the company*/	
+ex:yearsinthecompany a oc-acl:LeftOperandAttribute ;
+    oc-acl:scope oc-acl:subject ;
+    oc-acl:attributeName "Years in the company" .
+
+ex:seniorincompany a odrl:Constraint ;
+    odrl:leftOperand ex:yearsinthecompany ;
+    odrl:operator odrl:ge ;
+    odrl:rightOperand "5" .
+	
+/*manca samecompany*/ /*modificare policy flix e togliere samename*/
+		
+/********************************security measures****************************************/
+
+ex:policyProtection1 a oc-acl:DataProtection ;
+        oc-acl:protectedResource <urn:entity:www1> ;
+        oc-acl:protectedAttribute <urn:attribute:Consent> ;
+        oc-acl:protectionMode dpv:EncryptionInTransfer ;
+        oc-acl:protectionTechnique dpv:HomomorphicEncryption .
+		
+ex:policyProtection2 a oc-acl:DataProtection ;
+        oc-acl:protectedResource <urn:entity:www1> ;
+        oc-acl:protectedAttribute <urn:attribute:Type of data> ;
+        oc-acl:protectionMode dpv:EncryptionInTransfer ;
+        oc-acl:protectionTechnique dpv:HomomorphicEncryption .
+		
+/********************************authorizations********************************************/
+
+/*DOCTORS*/
+
+ex:policy1 a acl:Authorization ;
+    acl:accessTo <urn:entity:www1>, <urn:entity:www2>  ;   /*mettere valido su tutte le entità*/ /*acl:default $containerResource*/
+	acl:accessToClass <http://example.org/resource_type/entity> ;
+    acl:agentGroup <acl:agentGroup:Doctors> ;              /* acl:agentClass acl:AuthenticatedAgent*/
+    oc-acl:constraint ex:consentresource ;
+    acl:mode acl:Read, oc-acl:Decrypt.
+	
+ex:policy2 a acl:Authorization ;
+    acl:accessTo <urn:entity:www1>, <urn:entity:www2>  ;   /*mettere valido su tutte le entità*/
+	acl:accessToClass <http://example.org/resource_type/entity> ;
+    acl:agentGroup <acl:agentGroup:Doctors> ;
+    oc-acl:constraint ex:consentresource, ex:notsensitiveresource ;
+    acl:mode acl:Append, oc-acl:Decrypt .
+	
+ex:policy3 a acl:Authorization ;
+    acl:accessTo <urn:entity:www1>, <urn:entity:www2>  ;   /*mettere valido su tutte le entità*/
+	acl:accessToClass <http://example.org/resource_type/entity> ;
+    acl:agentGroup <acl:agentGroup:Doctors> ;
+    oc-acl:constraint ex:consentresource, ex:notsensitiveresource, ex:seniorworker ;
+    acl:mode acl:Append, oc-acl:Decrypt, oc-acl:Encrypt .
+	
+ex:policy4 a acl:Authorization ;
+    acl:accessTo <urn:entity:www1>, <urn:entity:www2>  ;   /*mettere valido su tutte le entità*/
+	acl:accessToClass <http://example.org/resource_type/entity> ;
+    acl:agentGroup <acl:agentGroup:Doctors> ;
+    oc-acl:constraint ex:consentresource, ex:notsensitiveresource, ex:seniorworker, ex:seniorincompany ;
+    acl:mode oc-acl:Write, oc-acl:Decrypt, oc-acl:Encrypt .
+	
+/*NURSES*/
+	
+ex:policy5 a acl:Authorization ;
+    acl:accessTo <urn:entity:www1>, <urn:entity:www2>  ;   /*mettere valido su tutte le entità*/
+	acl:accessToClass <http://example.org/resource_type/entity> ;
+    acl:agentGroup <acl:agentGroup:Nurses> ;
+    oc-acl:constraint ex:consentresource, ex:notsensitiveresource ;
+    acl:mode acl:Read, oc-acl:Decrypt .
+	
+ex:policy6 a acl:Authorization ;
+    acl:accessTo <urn:entity:www1>, <urn:entity:www2>  ;   /*mettere valido su tutte le entità*/
+	acl:accessToClass <http://example.org/resource_type/entity> ;
+    acl:agentGroup <acl:agentGroup:Nurses> ;
+    oc-acl:constraint ex:consentresource, ex:notsensitiveresource, ex:seniorworker ;
+    acl:mode acl:Append, oc-acl:Decrypt .
+	
+ex:policy7 a acl:Authorization ;
+    acl:accessTo <urn:entity:www1>, <urn:entity:www2>  ;   /*mettere valido su tutte le entità*/
+	acl:accessToClass <http://example.org/resource_type/entity> ;
+    acl:agentGroup <acl:agentGroup:Nurses> ;
+    oc-acl:constraint ex:consentresource, ex:notsensitiveresource, ex:seniorworker, ex:seniorincompany ;
+    acl:mode acl:Write, oc-acl:Decrypt, oc-acl:Encrypt .
+	
+	
+
+
+	  
+	  
+	  
+	  
+
+	  
+	  
+	  
+	  
