@@ -1,0 +1,8 @@
+{
+    "result": {
+        "allow": false,
+        "anonymized": true,
+        "encrypted": true,
+        "resource_provided_by_researcher": true
+    }
+}

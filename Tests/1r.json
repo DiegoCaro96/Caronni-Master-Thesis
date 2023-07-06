@@ -1,0 +1,12 @@
+{
+    "result": {
+        "allow": true,
+        "anonymized": false,
+        "encrypted": true,
+        "resource_provided_by_researcher": true,
+        "same_company": true,
+        "user_is_doctor": true,
+        "user_is_owner": true,
+        "user_is_researcher": true
+    }
+}

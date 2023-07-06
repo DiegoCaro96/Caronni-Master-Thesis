@@ -1,0 +1,14 @@
+{
+    "input": {
+        "data_consumer": "24hj9",
+        "attributes": {
+            "24hj9": {
+                "company": "c2",
+                "role": "doctor",
+                "researcher": true
+            }
+        },
+        "method": "GET",
+        "data_product": "https://www.db1.com/resource1/"
+    }
+}

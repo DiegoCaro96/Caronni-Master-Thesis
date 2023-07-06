@@ -1,0 +1,14 @@
+POST /v1/data/opa/policy1/allow HTTP/1.1
+Host: localhost:8181
+Content-Type: application/json
+{
+   "input":{
+      "user":"bob",
+      "method":"POST"
+   }
+}
+
+curl localhost:8181/v1/data/rules -d @input.json -H 'Content-Type: application/json'
+
+
+./opa run data.json rules.rego -s

@@ -1,0 +1,14 @@
+{
+    "attributes": {
+        "24hj9": {
+            "company": "c2",
+            "role": "doctor",
+			"researcher": true
+        },
+        "56tywe": {
+            "company": "c2",
+            "role": "nurse",
+			"researcher": null
+        }
+    }
+}

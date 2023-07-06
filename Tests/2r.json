@@ -1,0 +1,10 @@
+{
+    "result": {
+        "allow": false,
+        "anonymized": false,
+        "encrypted": false,
+        "same_company": true,
+        "user_is_doctor": true,
+        "user_is_researcher": true
+    }
+}

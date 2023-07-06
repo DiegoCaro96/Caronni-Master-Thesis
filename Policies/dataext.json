@@ -1,0 +1,28 @@
+{
+    "attributes": {
+        "24hj9": {
+            "company": "c2",
+            "role": "doctor",
+			"researcher": true
+        },
+        "56tywe": {
+            "company": "c2",
+            "role": "nurse",
+			"researcher": null
+        }
+    },
+    "metadata": {
+		"https://www.db2.com/resource4/": {
+            "name": "resource4" ,
+            "db": "db2",
+            "owner": "24hj9",
+            "company": "c2"               
+        },
+		 "https://www.db2.com/resource5/": {
+            "name": "resource5",
+            "db": "db2",
+            "owner": "24hj9",
+            "company": "c2"               
+        }
+    }
+}

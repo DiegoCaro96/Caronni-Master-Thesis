@@ -1,0 +1,14 @@
+{
+    "input": {
+        "data_consumer": "56tywe",
+        "attributes": {
+            "56tywe": {
+                "company": "c2",
+                "role": "nurse",
+                "researcher": null
+            }
+        },
+        "method": "GET",
+        "data_product": "https://www.db1.com/resource1/"
+    }
+}

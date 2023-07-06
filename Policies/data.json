@@ -1,0 +1,41 @@
+{
+    "attributes": {
+        "a2b67": {
+            "company": "c1",
+            "role": "doctor",
+			"researcher": true
+        },
+        "98uio": {
+            "company": "c1",
+            "role": "doctor",
+			"researcher": false
+        }
+     },
+        
+    "metadata": {
+        "https://www.db1.com/resource1/": {
+            "name": "resource1",
+            "db": "db1",
+            "owner": "a2b67",
+            "company": "c1"               
+        },
+		 "https://www.db1.com/resource2/": {
+            "name": "repource2" ,
+            "db": "db1",
+            "owner": "98uio",
+            "company": "c1"               
+        },
+		 "https://www.db1.com/resource3/": {
+            "name": "resource3" ,
+            "db": "db1",
+            "owner": "98uio",
+            "company": "c1"               
+        },
+		 "https://www.db3.com/resource6/": {
+            "name": "resource6",
+            "db": "db3",
+            "owner": "a2b67",
+            "company": "c1"               
+        }
+    }
+}
